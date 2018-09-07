@@ -100,8 +100,7 @@ In standard Unity editor, we can jump to the call-point of ``Debug.Log / Debug.u
 Unfortunately, there are no way to solve this problem from any code. 
 To avoid this problem, we have to make a ".dll".
 
-This is the reason why this repository doesn't include any source code of ``XJDebug``.
-All of source code of this utility is shown in https://github.com/XJINE/Unity_XJDebugDll
+This is the reason why assets directory doesn't include any source code of ``XJDebug``.
 
 - Reference
     - https://answers.unity.com/questions/176422/debug-wrapper-class.html
