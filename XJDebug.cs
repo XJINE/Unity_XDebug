@@ -21,6 +21,8 @@ public static partial class XJDebug
 
     public static bool NullIsEnableTag = true;
 
+    public static bool UnregisteredIsEnableTag = true;
+
     private static int maxLogCount = 1000;
 
     private static List<LogInfo> logs;
@@ -109,7 +111,9 @@ public static partial class XJDebug
             return XJDebug.tags[tag];
         }
 
-        return false;
+        XJDebug.tags.Add(tag, XJDebug.UnregisteredIsEnableTag);
+
+        return XJDebug.UnregisteredIsEnableTag;
     }
 
     public static void LogError(object message, string tag = null)
