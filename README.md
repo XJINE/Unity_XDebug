@@ -44,9 +44,9 @@ Then, following KEYs are replaced with ``XJDebug.LogInfo`` field's value.
 | {0} | logType              | UnityEngine.LogType |
 | {1} | timeInSinceLevelLoad | Time.sinceLevelLoad |
 | {2} | timeInSystem         | System.DateTime.Now |
-| {3} | message              | message is keeped as string and null becomes "NULL". |
-| {4} | context              | context is keeped as string and null becomes "NULL". |
-| {5} | tag                  | Tag                 |
+| {3} | message              | keeped as string and null value replaced with "XJDebug.LogInfo.StringFormatNullMessage". |
+| {4} | context              | keeped as string and null value replaced with "XJDebug.LogInfo.StringFormatNullContext". |
+| {5} | tag                  | tag keeps nullable string and null value replaced with "XJDebug.LogInfo.StringFormatNullTag" when decode.|
 
 EX:
 ```csharp
