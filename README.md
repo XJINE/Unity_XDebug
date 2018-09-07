@@ -46,7 +46,7 @@ Then, following KEYs are replaced with ``XJDebug.LogInfo`` field's value.
 | {2} | timeInSystem         | System.DateTime.Now |
 | {3} | message              | message is keeped as string and the null value is replaced with "XJDebug.LogInfo.StringFormatNullMessage". |
 | {4} | context              | context is keeped as string and the null value is replaced with "XJDebug.LogInfo.StringFormatNullContext". |
-| {5} | tag                  | tag keeps nullable string and null value will be replaced with "XJDebug.LogInfo.StringFormatNullTag" when output.|
+| {5} | tag                  | tag keeps nullable string and the null value will be replaced with "XJDebug.LogInfo.StringFormatNullTag" when output.|
 
 EX:
 ```csharp
