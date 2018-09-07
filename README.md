@@ -85,7 +85,7 @@ EX:
 XJDebug.Logs.Where<XJDebug.LogInfo>(log => log.tag == null)
 ```
 
-``XJDebug.LogInfo`` fields are shown in [**Output Format**](#output-icollection) section.
+``XJDebug.LogInfo`` fields are shown in [**Output Format**](#output-format) section.
 
 ## Limitation
 
@@ -110,4 +110,6 @@ All of source code of this utility is shown in https://github.com/XJINE/Unity_XJ
 ### Tag Output
 
 To avoid wrong conflict with other debug system which use tag, ``Debug.unityLogger.Log(tag~)`` must be used.
+So the output text in Unity editor always has a "tag: " at first.
+
 This problem will may be not considered in future.
