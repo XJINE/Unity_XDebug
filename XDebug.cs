@@ -2,11 +2,11 @@
 using System.Collections.ObjectModel;
 using UnityEngine;
 
-public static partial class XJDebug
+public static partial class Debug
 {
     // WARNING:
     // This utility is must be used as dll.
-    // If you need more detail, check comments in "XJDebug.Log".
+    // If you need more detail, check comments in Log().
 
     // NOTE:
     // This utility doesn't consider any rich text in l(L)ogs.
@@ -17,15 +17,13 @@ public static partial class XJDebug
     // To make a ReadOnlyCollection, it need to use List instead of Queue.
     // Because Queue does't inherit IList.
 
-    public static bool KeepDisableTagLog = false;
+    public static bool NullTagIsEnabled = true;
 
-    public static bool NullIsEnableTag = true;
+    public static bool UnregisteredTagIsEnabled = true;
 
-    public static bool UnregisteredIsEnableTag = true;
+    private static int maxLogCount = 100;
 
-    private static int maxLogCount = 1000;
-
-    private static List<LogInfo> logs;
+    private static List<LogData> logs;
 
     private static Dictionary<string, bool> tags;
 
@@ -37,16 +35,16 @@ public static partial class XJDebug
     {
         get
         {
-            return XJDebug.maxLogCount;
+            return Debug.maxLogCount;
         }
         set
         {
-            XJDebug.maxLogCount = value;
+            Debug.maxLogCount = value;
             TrimLogs();
         }
     }
 
-    public static ReadOnlyCollection<LogInfo> Logs
+    public static ReadOnlyCollection<LogData> Logs
     {
         get;
         private set;
@@ -58,17 +56,23 @@ public static partial class XJDebug
         private set;
     }
 
+    public static bool UnityLoggerEnabled
+    {
+        get { return UnityEngine.Debug.unityLogger.logEnabled;  }
+        set { UnityEngine.Debug.unityLogger.logEnabled = value; }
+    }
+    
     #endregion Property
 
     #region Constructor
 
-    static XJDebug()
+    static Debug()
     {
-        XJDebug.logs = new List<XJDebug.LogInfo>();
-        XJDebug.Logs = new ReadOnlyCollection<XJDebug.LogInfo>(XJDebug.logs);
+        Debug.logs = new List<Debug.LogData>();
+        Debug.Logs = new ReadOnlyCollection<Debug.LogData>(Debug.logs);
 
-        XJDebug.tags = new Dictionary<string, bool>();
-        XJDebug.Tags = new ReadOnlyDictionary<string, bool>(XJDebug.tags);
+        Debug.tags = new Dictionary<string, bool>();
+        Debug.Tags = new ReadOnlyDictionary<string, bool>(Debug.tags);
     }
 
     #endregion Constructor
@@ -77,43 +81,43 @@ public static partial class XJDebug
 
     public static void EnableTag(string tag)
     {
-        if (XJDebug.tags.ContainsKey(tag))
+        if (Debug.tags.ContainsKey(tag))
         {
-            XJDebug.tags[tag] = true;
+            Debug.tags[tag] = true;
         }
         else
         {
-            XJDebug.tags.Add(tag, true);
+            Debug.tags.Add(tag, true);
         }
     }
 
     public static void DisableTag(string tag)
     {
-        if (XJDebug.tags.ContainsKey(tag))
+        if (Debug.tags.ContainsKey(tag))
         {
-            XJDebug.tags[tag] = false;
+            Debug.tags[tag] = false;
         }
         else
         {
-            XJDebug.tags.Add(tag, false);
+            Debug.tags.Add(tag, false);
         }
     }
 
-    public static bool TagIsEnable(string tag)
+    public static bool TagIsEnabled(string tag)
     {
         if (tag == null)
         {
-            return XJDebug.NullIsEnableTag;
+            return Debug.NullTagIsEnabled;
         }
 
-        if (XJDebug.tags.ContainsKey(tag))
+        if (Debug.tags.ContainsKey(tag))
         {
-            return XJDebug.tags[tag];
+            return Debug.tags[tag];
         }
 
-        XJDebug.tags.Add(tag, XJDebug.UnregisteredIsEnableTag);
+        Debug.tags.Add(tag, Debug.UnregisteredTagIsEnabled);
 
-        return XJDebug.UnregisteredIsEnableTag;
+        return Debug.UnregisteredTagIsEnabled;
     }
 
     public static void LogError(object message, string tag = null)
@@ -123,7 +127,7 @@ public static partial class XJDebug
 
     public static void LogError(object message, Object context, string tag = null)
     {
-        Log(LogType.Error, tag, message, context);
+        Log(message, context, tag, LogType.Error);
     }
 
     public static void LogAssert(object message, string tag = null)
@@ -133,7 +137,7 @@ public static partial class XJDebug
 
     public static void LogAssert(object message, Object context, string tag = null)
     {
-        Log(LogType.Assert, tag, message, context);
+        Log(message, context, tag, LogType.Assert);
     }
 
     public static void LogWarning(object message, string tag = null)
@@ -143,7 +147,7 @@ public static partial class XJDebug
 
     public static void LogWarning(object message, Object context, string tag = null)
     {
-        Log(LogType.Warning, tag, message, context);
+        Log(message, context, tag, LogType.Warning);
     }
 
     public static void LogException(object message, string tag = null)
@@ -153,7 +157,7 @@ public static partial class XJDebug
 
     public static void LogException(object message, Object context, string tag = null)
     {
-        Log(LogType.Exception, tag, message, context);
+        Log(message, context, tag, LogType.Exception);
     }
 
     public static void Log(object message, string tag = null)
@@ -163,10 +167,10 @@ public static partial class XJDebug
 
     public static void Log(object message, Object context, string tag = null)
     {
-        Log(LogType.Log, tag, message, context);
+        Log(message, context, tag, LogType.Log);
     }
 
-    private static void Log(LogType logType, string tag, object message, Object context)
+    private static void Log(object message, Object context, string tag, LogType logType)
     {
         // WARNING:
         // When use standard UnityEditor & Debug.Log,
@@ -177,52 +181,55 @@ public static partial class XJDebug
         // https://answers.unity.com/questions/176422/debug-wrapper-class.html
         // https://answers.unity.com/questions/1226230/how-to-properly-call-debuglogstring-in-a-custom-lo.html
 
+        if (!TagIsEnabled(tag))
+        {
+            return;
+        }
+
+        LogData logData;
+
+        bool messageIsLogData = message.GetType() == typeof(LogData);
+
+        if (messageIsLogData)
+        {
+            logData = (LogData)message;
+        }
+        else
+        {
+            logData = new LogData(message, context, tag, logType);
+
+            Debug.logs.Add(logData);
+
+            TrimLogs();
+        }
+
         // NOTE:
-        // Arguments order is same as "Debug.unity.logger.Log".
+        // In following case, the output text gets "tag:message" format.
+        // UnityEngine.Debug.unityLogger.Log(logType, tag, logData.ToString(), context);
 
-        LogInfo logInfo = new LogInfo(logType, message, context, tag);
+        const string UNITY_LOGGER_FORMAT = "{0}"; 
 
-        bool tagIsEnable = TagIsEnable(tag);
-
-        if (tagIsEnable)
-        {
-            Debug.unityLogger.Log(logType, tag, logInfo.ToString(), context);
-        }
-
-        if (tagIsEnable || XJDebug.KeepDisableTagLog)
-        {
-            UpdateLogs(logInfo);
-        }
-    }
-
-    private static void UpdateLogs(LogInfo logInfo) 
-    {
-        XJDebug.logs.Add(logInfo);
-        TrimLogs();
+        UnityEngine.Debug.unityLogger.LogFormat(logType, context, UNITY_LOGGER_FORMAT, logData);
     }
 
     private static void TrimLogs() 
     {
-        int logsCount = XJDebug.logs.Count;
+        int diff = Debug.logs.Count - Debug.maxLogCount;
 
-        while (logsCount > XJDebug.maxLogCount)
+        for (int i = 0; i < diff; i++)
         {
-            XJDebug.logs.RemoveAt(0);
-            logsCount = XJDebug.logs.Count;
+            Debug.logs.RemoveAt(0);
         }
     }
 
     public static void ClearLogs() 
     {
-        XJDebug.logs.Clear();
+        Debug.logs.Clear();
     }
 
     public static void ClearTags() 
     {
-        // NOTE:
-        // All of tags will shows disable.
-
-        XJDebug.tags.Clear();
+        Debug.tags.Clear();
     }
 
     #endregion Method

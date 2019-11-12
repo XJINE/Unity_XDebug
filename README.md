@@ -1,114 +1,144 @@
-# Unity_XJDebug
+# Unity_XDebug
 
-Provides some debug functions to keep logs, to tag control, and to various output. 
+XDebug has Debug class and it will replace UnityEngine.Debug.
+The (X)Debug class will keep logs with these time and the tag.
 
 ## Import to Your Project
 
 You can import this asset from UnityPackage.
 
-- [XJDebug.unitypackage](https://github.com/XJINE/Unity_XJDebug/blob/master/XJDebug.unitypackage)
+- [XDebug.unitypackage](https://github.com/XJINE/Unity_XDebug/blob/master/XDebug.unitypackage)
 
 ## How to Use
 
 ### Log Control with Tag
 
-Log and the output are able to control with tag. 
+Log and the output are able to control with tag.
 
 Default tag value is ``null`` and it is enabled.
-You can switch the setting with ``XJDebug.NullIsEnableTag`` if you need.
+You can switch the setting with ``Debug.NullIsEnableTag`` if you need.
 
 EX:
 ```csharp
-XJDebug.EnableTag("TAG_A");
-XJDebug.DisableTag("TAG_B");
+Debug.EnableTag("TAG_A");
+Debug.DisableTag("TAG_B");
 
-XJDebug.Log("MESSAGE_1", "TAG_A");
-XJDebug.Log("MESSAGE_2", this, "TAG_B");
-XJDebug.LogWarning("MESSAGE_3", this);
+Debug.Log("Message01", "TAG_A");
+Debug.Log("Message02", "TAG_B");
+Debug.LogWarning("Message03", this);
 ```
 RESULT:
 ```
-TAG_A: MESSAGE_1
-: MESSAGE_3
+Message01
+Message03
 ```
 
 ### Output Format
 
-Output format is able to customize with ``XJDebug.LogInfo.StringFormat``.
+Output format is able to customize with ``Debug.LogData.StringFormat``.
 This format is used as ```String.Format``` when the message will be generated.
 
-Then, following KEYs are replaced with ``XJDebug.LogInfo`` field's value.
+Then, following KEYs are replaced with ``Debug.LogInfo`` field's value.
 
-| KEY | FIELD                | DETAIL              |
-|:----|:---------------------|:--------------------|
-| {0} | logType              | UnityEngine.LogType |
-| {1} | timeInSinceLevelLoad | Time.sinceLevelLoad |
-| {2} | timeInSystem         | System.DateTime.Now |
-| {3} | message              | message is keeped as string and the null value is replaced with "XJDebug.LogInfo.StringFormatNullMessage". |
-| {4} | context              | context is keeped as string and the null value is replaced with "XJDebug.LogInfo.StringFormatNullContext". |
-| {5} | tag                  | tag keeps nullable string and the null value will be replaced with "XJDebug.LogInfo.StringFormatNullTag" when output.|
+| KEY | FIELD                       |
+|:----|:----------------------------|
+| {0} | Message                     |
+| {1} | Context                     |
+| {2} | Tag                         |
+| {3} | LogType                     |
+| {4} | Time in Time.sinceLevelLoad |
+| {5} | Time in System.DateTime.Now |
 
 EX:
 ```csharp
- XJDebug.LogInfo.StringFormat = "{2} ({1}) {3}";
- XJDebug.Log("MESSAGE");
+ Debug.LogInfo.StringFormat = "[{5}] {0}";
+ Debug.Log("MESSAGE04");
 ```
 
 RESULT:
 ```
-: 2018/09/07 2:17:39 (134) MESSAGE
+[14:28:59] Message04
 ```
 
-### Output ICollection
+Some of these formats are able to set with the following settings.
 
-ICollection message such as Array, List and any others are splitted into each item with ``XJDebug.LogInfo.StringFormatSplitter``.
+```csharp
+Debug.LogData.StringFormatNullMessage = "";
+Debug.LogData.StringFormatNullContext = "";
+Debug.LogData.StringFormatNullTag     = "";
+Debug.LogData.StringFormatDateTimeNow = "HH:mm:ss";
+```
+
+### Output IEnumerable
+
+IEnumerable message such as Array, List and any others are separated into each item with ``Debug.LogData.StringFormatSeparator``.
 
 EX:
 ```csharp
-List<int> intList = new List<int>() { 0, 1, 2 };
-XJDebug.Log(intList);
+List<int> list = new List<int>() { "Message05", 6, 7 };
+Debug.Log(list, "TAG_A");
 ```
 
 RESULT:
 ```
-: 0, 1, 2,
+Message05, 6, 7
 ```
 
 ### Keep Logs
 
-Logs are keeped in ``XJDebug.Logs`` upto ``XJDebug.MaxLogCount``.
-By using ``XJDebug.KeepDisableTagLog``, able to keep log without any output.
+Logs are keeped in ``Debug.Logs`` upto ``Debug.MaxLogCount``.
 
 EX:
 ```csharp
 // Take null tagged logs with LINQ.
-XJDebug.Logs.Where<XJDebug.LogInfo>(log => log.tag == null)
+foreach (Debug.LogData log in Debug.Logs.Where<Debug.LogData>(log => log.tag == null))
+{
+    Debug.Log(log);
+}
 ```
 
-``XJDebug.LogInfo`` fields are shown in [**Output Format**](#output-format) section.
+### Disable Output
+
+``Debug.UnityLoggerEnabled`` equals ``UnityEngine.Debug.unitylogger.enabled.``.
+When it gets false, no messages are output but the log will be kept in ``(X)Debug.Logs``.
+
+EX:
+```csharp
+Debug.UnityLoggerEnabled = false;
+
+Debug.Log("Message08");
+
+Debug.UnityLoggerEnabled = true;
+
+foreach (Debug.LogData log in Debug.Logs)
+{
+    Debug.Log(log);
+}
+```
+
+RESULT:
+```
+~
+Message08
+```
 
 ## Limitation
 
 ### Reference of Message and Context
 
-"message" and "context" are keeped as string in ``XJDebug.LogInfo`` because "object message" and "Object context" are may be null when ``XJDebug.LogInfo`` instance are referenced.
+"message" and "context" are keeped as string in ``Debug.LogData`` because "object message" and "Object context" are may be null.
 
-### To Keep Consle Click Function
+### To Keep Consle Click Action
 
-In standard Unity editor, we can jump to the call-point of ``Debug.Log / Debug.unityLogger.Log`` in source code with console click. However if make a wrapper function of these, the call-point is set inside the wrapper.
+In standard Unity editor, we can jump to the call-point of ``Debug.Log / Debug.unityLogger.Log`` in source code with console click.
+
+However if make a wrapper function of these, the call-point is set inside the wrapper.
 
 Unfortunately, there are no way to solve this problem from any code. 
 To avoid this problem, we have to make a ".dll".
 
-This is the reason why assets directory doesn't include any source code of ``XJDebug``.
+This is the reason why assets directory doesn't include any source code of ``XDebug``.
 
 - Reference
     - https://answers.unity.com/questions/176422/debug-wrapper-class.html
     - https://answers.unity.com/questions/1226230/how-to-properly-call-debuglogstring-in-a-custom-lo.html
-
-### Tag Output
-
-To avoid wrong conflict with other debug system which use tag, ``Debug.unityLogger.Log(tag~)`` must be used.
-So the output text in Unity editor always has a "tag: " at first.
-
-This problem will may be not considered in future.
