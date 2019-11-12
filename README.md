@@ -38,7 +38,7 @@ Message03
 Output format is able to customize with ``Debug.LogData.StringFormat``.
 This format is used as ```String.Format``` when the message will be generated.
 
-Then, following KEYs are replaced with ``Debug.LogInfo`` field's value.
+Then, following KEYs are replaced with ``Debug.LogData`` field values.
 
 | KEY | FIELD                       |
 |:----|:----------------------------|
@@ -130,7 +130,7 @@ Message08
 
 ### To Keep Consle Click Action
 
-In standard Unity editor, we can jump to the call-point of ``Debug.Log / Debug.unityLogger.Log`` in source code with console click.
+In standard Unity editor, we can jump to the call-point of ``Debug.Log`` in source code with console click.
 
 However if make a wrapper function of these, the call-point is set inside the wrapper.
 
