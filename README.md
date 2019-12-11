@@ -51,7 +51,7 @@ Then, following KEYs are replaced with ``Debug.LogData`` field values.
 
 EX:
 ```csharp
- Debug.Log.StringFormat = "[{5}] {0}";
+ Debug.LogData.StringFormat = "[{5}] {0}";
  Debug.Log("MESSAGE04");
 ```
 
