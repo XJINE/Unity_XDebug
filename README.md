@@ -1,3 +1,8 @@
+# Obsolete
+
+This project is no longer maintained.
+Please use https://github.com/XJINE/Unity_DebugLogRecorder instead.
+
 # Unity_XDebug
 
 XDebug has Debug class and it will replace UnityEngine.Debug.
